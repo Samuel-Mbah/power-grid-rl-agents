@@ -1,122 +1,173 @@
-# Grid2Op Reinforcement Learning Agents: DQN and Successive Representation
+# power-grid-rl-agents
 
-This project explores reinforcement learning techniques applied to power grid management using the Grid2Op environment. The agents are trained to ensure the stability and reliability of a power grid by optimizing both `L2RPNReward` and `N1Reward`. Two algorithms are implemented and iteratively improved:
-- **Deep Q-Network (DQN)**
-- **Successive Representation Agent**
+> **Suggested repository name:** `power-grid-rl-agents`
+>
+> This name is concise, descriptive, and follows standard GitHub naming conventions (lowercase, hyphen-separated). It clearly communicates that the repository contains reinforcement learning agents for power grid management.
+
+Reinforcement learning agents for power grid management using the [Grid2Op](https://grid2op.readthedocs.io/) environment. Agents are trained to maintain grid stability and N-1 reliability by optimising a combined `L2RPNReward` and `N1Reward`. Two core algorithms are implemented and iteratively improved across multiple experiment branches:
+
+- **Deep Q-Network (DQN)** – via [Stable-Baselines3](https://stable-baselines3.readthedocs.io/)
+- **Successive Representation (SR) Agent** – a custom implementation
+
+---
+
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Repository Structure](#repository-structure)
+- [Branch Overview](#branch-overview)
+- [Installation](#installation)
+  - [Dependencies](#dependencies)
+- [Usage](#usage)
+- [Results](#results)
+- [Contributing](#contributing)
+
+---
 
 ## Project Overview
 
-The goal of this project is to develop, evaluate, and iteratively improve reinforcement learning agents for the task of power grid management. The focus is on the reliability of electricity flow across the network, with the ability to withstand individual component failures (N-1 reliability). 
+The goal of this project is to develop, evaluate, and iteratively improve RL agents for the task of automated power grid operation. The environment is the `l2rpn_case14_sandbox` scenario from Grid2Op, wrapped as a Gymnasium-compatible environment.
+
+Key challenges addressed:
+- **N-1 reliability** – the grid must remain stable after the loss of any single component.
+- **Continuous operation** – agents must take topological actions (bus switching, line reconnection) to prevent cascading failures.
+- **Exploration strategies** – multiple exploration approaches (ε-greedy, Boltzmann, UCB) are compared.
+
+---
+
+## Repository Structure
+
+```
+power-grid-rl-agents/
+├── baseline.ipynb              # Baseline DQN agent (Stable-Baselines3 MlpPolicy)
+├── baseline.zip                # Saved weights for the baseline DQN agent
+├── CombinedScaledRewards.png   # Reward plot comparing agent performance
+├── requirements.txt            # Python dependencies
+├── .gitignore                  # Files excluded from version control
+└── README.md                   # This file
+```
+
+Each experiment branch (see [Branch Overview](#branch-overview)) follows the same structure and adds its own notebook, saved model, and reward plot.
+
+---
+
+## Branch Overview
+
+This project uses a **branch-per-experiment** workflow. Each branch contains a self-contained notebook and saved model for a specific improvement or ablation:
+
+| Branch | Description |
+|---|---|
+| `main` | Stable, production-ready baseline DQN agent |
+| `DQN-with-new-exploration-strategy` | Boltzmann (softmax) exploration for DQN |
+| `DQN-with-UCB` | Upper Confidence Bound (UCB) exploration for DQN |
+| `Reward-Shaping` | Custom reward shaping to guide DQN behaviour |
+| `DQN-with-Seeds-for-reproducibility` | Fixed random seeds for reproducible experiments |
+| `minimize-observations` | Reduced observation space (critical features only) |
+| `Successive-Representation` | SR agent baseline and tuned variants |
+| `Final-code` | Final selected models and consolidated results |
+
+> **GitHub best practice tip:** Long-lived experiment branches should be merged into `main` (or a dedicated `develop` branch) via pull requests once validated, and then deleted. Use branch naming conventions such as `feat/`, `exp/`, or `fix/` prefixes for clarity (e.g. `exp/boltzmann-exploration`).
+
+---
 
 ## Installation
 
-### Requirements
+### Prerequisites
 
-- Python 3.8 or above
-- `gymnasium`
-- `Grid2Op` library
-- `Stable-Baselines3` (optional, if using for comparison purposes)
-- `matplotlib` for visualizations
-- `PyTorch` for DQN implementation
-- `lightsim2grid` for backend simulation
+- Python 3.8 or higher
+- `pip`
 
-### Steps to Install
+### Steps
 
 1. **Clone the repository:**
     ```bash
-    git clone https://github.com/your-repo-url.git]
-    cd [your-repo-url](https://github.com/Samuel-Mbah/Power-grid-assignment.git)
+    git clone https://github.com/Samuel-Mbah/Power-grid-assignment.git
+    cd Power-grid-assignment
     ```
+    > If the repository has been renamed to `power-grid-rl-agents`, replace the URL accordingly.
 
-2. **Set up a virtual environment (optional but recommended):**
+2. **Create and activate a virtual environment (recommended):**
     ```bash
     python3 -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+    source venv/bin/activate        # Linux / macOS
+    # venv\Scripts\activate         # Windows
     ```
 
-3. **Install the dependencies:**
+3. **Install Python dependencies:**
     ```bash
     pip install -r requirements.txt
     ```
 
-4. **Set up the Grid2Op environment:**
-    Follow the installation instructions on the [Grid2Op Documentation](https://grid2op.readthedocs.io/en/latest/).
+4. **Download the Grid2Op scenario data** (handled automatically on first run, or follow the [Grid2Op documentation](https://grid2op.readthedocs.io/en/latest/)).
 
-5. **Install LightSim2Grid:**
-    ```bash
-    pip install lightsim2grid
-    ```
+### Dependencies
 
-## Directory Structure
+| Package | Purpose |
+|---|---|
+| `grid2op` | Power grid simulation environment |
+| `lightsim2grid` | Fast backend for Grid2Op |
+| `gymnasium` | RL environment interface (OpenAI Gym successor) |
+| `stable-baselines3` | DQN implementation |
+| `torch` | Deep learning backend for Stable-Baselines3 |
+| `numpy` | Numerical computation |
+| `matplotlib` | Reward visualisation |
 
-```markdown
-├── main/                                 # Main codebase and baseline files
-│   ├── Baseline.ipynb                    # Baseline implementation notebook
-│   ├── baseline.zip                      # Compressed baseline agent files
-│   ├── CombinedScaledRewards.png         # Reward plot for baseline agent
-│
-├── DQN-with-new-exploration-strategy/    # Experiment with new exploration strategy (Boltzmann)
-│   ├── boltzmann_strategy.ipynb          # Notebook implementing Boltzmann exploration
-│   ├── dqn_boltzmann_agent.zip           # Compressed files for the Boltzmann DQN agent
-│   ├── CombinedRewards.png               # Reward plot for Boltzmann exploration DQN
-│
-├── DQN-with-UCB/                         # Experiment with Upper Confidence Bound (UCB)
-│   ├── dqn_ucb.ipynb                     # Notebook implementing UCB strategy
-│   ├── ucb_dqn_agent.zip                 # Compressed files for the UCB DQN agent
-│   ├── CombinedScaledRewards.png         # Reward plot for UCB DQN
-│
-├── Reward-Shaping/                       # Experiment with reward shaping for DQN
-│   ├── reward_shaping.ipynb              # Notebook with reward shaping strategy
-│   ├── dqn_grid2op_agent.zip             # Compressed files for reward-shaped DQN agent
-│   ├── CombinedScaledRewards.png         # Reward plot for reward-shaped DQN
-│
-├── DQN-with-Seeds-for-reproducibility/   # Experiment with seed-based reproducibility
-│   ├── DQN_seeds.ipynb                   # Notebook setting seeds for reproducibility
-│   ├── dqn_grid2op_agent.zip             # Compressed files for reproducible DQN agent
-│   ├── CombinedScaledRewards.png         # Reward plot for reproducible DQN
-│
-├── minimize-observations/                # Experiment minimizing observation space
-│   ├── Grid_op_assignment.ipynb          # Notebook for observation space reduction
-│   ├── dqn_grid2op_agent.zip             # Compressed files for minimized observation DQN agent
-│   ├── CombinedScaledRewards.png         # Reward plot for minimized observation DQN
-│
-├── Successive-Representation/            # Successive Representation agent implementation
-│   ├── SR_baseline.ipynb                 # Baseline implementation of SR agent
-│   ├── final-sr-w-o-hyperparameters.ipynb# Final SR agent without hyperparameter tuning
-│
-├── Final-code/                           # Final selected code and models
-│   ├── final_dqn_agent.ipynb             # Notebook for final DQN agent
-│   ├── dqn_grid2op_agent.zip             # Compressed final DQN agent files
-│   ├── dqn_boltzmann_agent.zip           # Compressed final Boltzmann exploration DQN agent
-│
-├── README.md                             # Project README file
-├── requirements.txt                      # Python dependencies
+---
 
+## Usage
+
+Open `baseline.ipynb` in Jupyter and run all cells in order. The notebook is self-contained and covers environment setup, agent training, evaluation, and plotting.
+
+To run the key steps in a standalone Python script, first copy the `Gym2OpEnv` class definition from the notebook into a file (e.g. `env_wrapper.py`), then:
+
+```python
+from stable_baselines3 import DQN
+from env_wrapper import Gym2OpEnv   # copy Gym2OpEnv from baseline.ipynb
+
+# Initialise environment
+env = Gym2OpEnv()
+
+# Train a new agent
+model = DQN("MlpPolicy", env, verbose=1)
+model.learn(total_timesteps=10_000)
+model.save("baseline")
+
+# Load a pre-trained agent and evaluate
+model = DQN.load("baseline", env=env)
+obs, _ = env.reset()
+for _ in range(100):
+    action, _ = model.predict(obs, deterministic=True)
+    obs, reward, done, truncated, info = env.step(action)
+    if done or truncated:
+        obs, _ = env.reset()
 ```
 
-## Experimentation & Improvements
-This repository contains different branches for various improvements and experiments conducted during the project:
+To experiment with a different strategy, check out the corresponding branch:
 
-- `main`: The main branch with the core implementations.
-- `DQN-with-new-exploration-strategy`: Implements a new exploration strategy (Boltzmann) for the DQN agent.
-- `DQN-with-UCB`: A variant of DQN with Upper Confidence Bound (UCB) for enhanced exploration.
-- `Reward-Shaping`: Custom reward shaping is introduced to guide DQN behaviour.
-- `DQN-with-Seeds-for-reproducibility`: Adds seeds for reproducibility in DQN experiments.
-- `minimize-observations`: Reduces the observation space to critical features for efficiency.
-- `Successive-Representation`: Contains experiments with a successive representation approach.
+```bash
+git checkout DQN-with-UCB
+```
 
+---
 
+## Results
 
-## Version Control
-This project uses Git for version control, with multiple branches for different features and experiments. Use the following commands to check the available branches and switch between them:
+The plot below compares the scaled episode rewards across evaluation runs for the baseline agent:
 
-1. **List all branches:**
-    ```bash
-    git branch -a
-    ```
-2. **Switch to a specific branch:**
-    ```bash
-    git checkout <branch-name>
-    ```
+![Combined Scaled Rewards](CombinedScaledRewards.png)
+
+---
+
+## Contributing
+
+Contributions are welcome. Please follow these steps:
+
+1. Fork the repository.
+2. Create a feature branch: `git checkout -b feat/your-feature-name`.
+3. Commit your changes with clear messages: `git commit -m "feat: add X"`.
+4. Push to your fork and open a pull request against `main`.
+5. Ensure your branch is up to date with `main` before opening a PR.
+
+Please keep one experiment or feature per branch and include a reward plot with your results.
 
 

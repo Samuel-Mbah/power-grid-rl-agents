@@ -1,2 +1,40 @@
-/env.py
-/RL__2024__Assignment.pdf
+# Assignment files not for distribution
+env.py
+RL__2024__Assignment.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+*.spec
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Distribution / packaging
+*.whl
+*.tar.gz
+
+# Editor and OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Grid2Op / Stable-Baselines3 artefacts
+*.log
+wandb/
+tensorboard_logs/
